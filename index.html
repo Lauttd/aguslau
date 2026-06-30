@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>El Portal de la Pareja 💕 — Agus & Lauti</title>
+    <meta name="description" content="El portal privado de Agustina y Lautaro para organizar su mundo juntos.">
+    <meta name="theme-color" content="#0f0a1a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Dancing+Script:wght@600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💕</text></svg>">
+</head>
+<body>
+    <!-- ANNIVERSARY MODE OVERLAY -->
+    <div id="anniversary-overlay" class="anniversary-overlay hidden">
+        <div class="falling-hearts-container" id="falling-hearts"></div>
+        <div class="anniversary-message">
+            <h1 class="anniversary-title">¡Feliz día mi amor! 💕</h1>
+            <p class="anniversary-text">Hoy es nuestro día 17. Gracias por elegirme todos los días.</p>
+            <button class="btn-primary" onclick="closeAnniversaryMode()">Entrar al Portal</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- LOGIN SCREEN -->
+    <!-- ═══════════════════════════════════════ -->
+    <div id="login-screen" class="screen active">
+        <!-- Quote of the Day on Login -->
+        <div class="daily-quote-card glass-card hidden" id="daily-quote-card">
+            <span class="quote-icon">💭</span>
+            <p id="daily-quote-text" class="quote-text"></p>
+            <p class="quote-date">Frase del día</p>
+        </div>
+
+        <div class="login-bg">
+            <div class="floating-heart" style="--delay:0s;--x:20%;--y:30%;--size:2rem">💗</div>
+            <div class="floating-heart" style="--delay:1.2s;--x:70%;--y:20%;--size:1.5rem">💕</div>
+            <div class="floating-heart" style="--delay:2.4s;--x:40%;--y:65%;--size:2.5rem">💖</div>
+            <div class="floating-heart" style="--delay:0.6s;--x:85%;--y:70%;--size:1.8rem">💝</div>
+            <div class="floating-heart" style="--delay:1.8s;--x:12%;--y:75%;--size:1.4rem">💞</div>
+            <div class="floating-heart" style="--delay:3s;--x:55%;--y:40%;--size:2.2rem">💗</div>
+            <div class="floating-heart" style="--delay:0.3s;--x:90%;--y:25%;--size:1.6rem">💕</div>
+            <div class="floating-heart" style="--delay:2s;--x:30%;--y:85%;--size:1.3rem">💖</div>
+        </div>
+        <div class="login-card">
+            <div class="login-logo-ring">
+                <div class="login-logo">💑</div>
+            </div>
+            <h1 class="login-title">El Portal de la Pareja</h1>
+            <p class="login-subtitle-script">Agustina & Lautaro</p>
+            <p class="login-date">Juntos desde Enero 2026 💕</p>
+            <div class="login-form">
+                <label class="login-label">¿Quién sos?</label>
+                <div class="login-user-select">
+                    <button class="login-user-btn active" data-user="agus" onclick="selectLoginUser('agus')">
+                        <span class="login-user-avatar">A</span>
+                        <span>Agus</span>
+                    </button>
+                    <button class="login-user-btn" data-user="lauti" onclick="selectLoginUser('lauti')">
+                        <span class="login-user-avatar lav-l">L</span>
+                        <span>Lauti</span>
+                    </button>
+                </div>
+                <div class="input-group">
+                    <span class="input-icon">🔑</span>
+                    <input type="password" id="login-password" placeholder="Contraseña secreta..." autocomplete="off" onkeydown="if(event.key==='Enter')attemptLogin()">
+                </div>
+                <button id="login-btn" class="btn-primary btn-login" onclick="attemptLogin()">
+                    <span>Entrar a nuestro mundo</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+                <p id="login-error" class="login-error"></p>
+                <p class="login-hint">💡 Contraseña: 17012026</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- MAIN APP -->
+    <!-- ═══════════════════════════════════════ -->
+    <div id="app-screen" class="screen">
+        <!-- SIDEBAR -->
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-logo">💕</span>
+                <h2 class="sidebar-title">A & L</h2>
+                <button class="sidebar-close" onclick="toggleSidebar()" aria-label="Cerrar menú">✕</button>
+            </div>
+            <div class="sidebar-user">
+                <div class="avatar-pair">
+                    <span class="avatar avatar-a">A</span>
+                    <span class="avatar avatar-l">L</span>
+                </div>
+                <p class="sidebar-couple">Agus & Lauti</p>
+                <p class="sidebar-days" id="days-together-sidebar"></p>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item active" data-section="dashboard" onclick="navigateTo('dashboard')">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Inicio</span>
+                </li>
+                <li class="nav-item" data-section="plans" onclick="navigateTo('plans')">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">Nuestros Planes</span>
+                </li>
+                <li class="nav-item" data-section="roulette" onclick="navigateTo('roulette')">
+                    <span class="nav-icon">🎰</span>
+                    <span class="nav-text">La Ruleta</span>
+                </li>
+                <li class="nav-item" data-section="coupons" onclick="navigateTo('coupons')">
+                    <span class="nav-icon">🎟️</span>
+                    <span class="nav-text">Cupones de Amor</span>
+                </li>
+                <li class="nav-item" data-section="capsule" onclick="navigateTo('capsule')">
+                    <span class="nav-icon">🕰️</span>
+                    <span class="nav-text">Cápsula del Tiempo</span>
+                </li>
+                <li class="nav-item" data-section="moto" onclick="navigateTo('moto')">
+                    <span class="nav-icon">🏍️</span>
+                    <span class="nav-text">Salidas en Moto</span>
+                </li>
+                <li class="nav-item" data-section="achievements" onclick="navigateTo('achievements')">
+                    <span class="nav-icon">🏆</span>
+                    <span class="nav-text">Logros Amorosos</span>
+                </li>
+                <li class="nav-item" data-section="phrases" onclick="navigateTo('phrases')">
+                    <span class="nav-icon">📝</span>
+                    <span class="nav-text">Frases Célebres</span>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <button class="btn-logout" onclick="logout()">
+                    <span>🚪</span> Cerrar sesión
+                </button>
+            </div>
+        </nav>
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+        <!-- MAIN CONTENT -->
+        <main id="main-content" class="main-content">
+            <!-- TOP BAR -->
+            <header class="topbar">
+                <button class="hamburger" onclick="toggleSidebar()" aria-label="Abrir menú">
+                    <span></span><span></span><span></span>
+                </button>
+                <h1 id="page-title" class="topbar-title">Inicio</h1>
+                <div class="topbar-right">
+                    <span class="topbar-user" id="topbar-user"></span>
+                </div>
+            </header>
+
+            <!-- ═══════════════════════════════════ -->
+            <!-- DASHBOARD -->
+            <!-- ═══════════════════════════════════ -->
+            <section id="section-dashboard" class="section active">
+                <!-- HERO / COUNTER -->
+                <div class="dashboard-hero" id="hero-container">
+                    <div class="hero-glow"></div>
+                    <div class="hero-content">
+                        <p class="hero-label">Tiempo juntos</p>
+                        <div class="hero-counter" id="hero-counter">
+                            <div class="counter-unit">
+                                <span class="counter-number" id="counter-years">0</span>
+                                <span class="counter-label">Años</span>
+                            </div>
+                            <span class="counter-sep">:</span>
+                            <div class="counter-unit">
+                                <span class="counter-number" id="counter-months">0</span>
+                                <span class="counter-label">Meses</span>
+                            </div>
+                            <span class="counter-sep">:</span>
+                            <div class="counter-unit">
+                                <span class="counter-number" id="counter-days">0</span>
+                                <span class="counter-label">Días</span>
+                            </div>
+                        </div>
+                        <p class="hero-total" id="hero-total-days"></p>
+                    </div>
+                </div>
+
+                <!-- MOOD / STATUS -->
+                <div class="mood-section">
+                    <div class="mood-card mood-card-partner">
+                        <div class="mood-avatar-container">
+                            <span class="mood-avatar" id="partner-mood-avatar"></span>
+                        </div>
+                        <p class="mood-name" id="partner-mood-name"></p>
+                        <p class="mood-status" id="partner-mood-status">...</p>
+                        <p class="mood-timestamp" id="partner-mood-time"></p>
+                    </div>
+                    <div class="mood-card mood-card-mine">
+                        <div class="mood-avatar-container">
+                            <span class="mood-avatar" id="my-mood-avatar"></span>
+                        </div>
+                        <p class="mood-name" id="my-mood-name"></p>
+                        <p class="mood-current" id="my-mood-current">Seleccioná tu estado</p>
+                        <div class="mood-options" id="mood-options">
+                            <button class="mood-btn" onclick="setMood('Extrañándote 🥺')">🥺 Extrañándote</button>
+                            <button class="mood-btn" onclick="setMood('Trabajando 💻')">💻 Trabajando</button>
+                            <button class="mood-btn" onclick="setMood('Con antojo 🍫')">🍫 Con antojo</button>
+                            <button class="mood-btn" onclick="setMood('Pensando en vos 💭')">💭 Pensando en vos</button>
+                            <button class="mood-btn" onclick="setMood('Feliz 😊')">😊 Feliz</button>
+                            <button class="mood-btn" onclick="setMood('Quiero mimos 🤗')">🤗 Quiero mimos</button>
+                            <button class="mood-btn" onclick="setMood('Estudiando 📚')">📚 Estudiando</button>
+                            <button class="mood-btn" onclick="setMood('Aburrido/a 😴')">😴 Aburrido/a</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUICK STATS -->
+                <div class="hero-stats">
+                    <div class="stat-card" onclick="navigateTo('plans')">
+                        <span class="stat-icon">📋</span>
+                        <span class="stat-number" id="stat-plans">0</span>
+                        <span class="stat-label">Planes pendientes</span>
+                    </div>
+                    <div class="stat-card" onclick="navigateTo('achievements')">
+                        <span class="stat-icon">🏆</span>
+                        <span class="stat-number" id="stat-achievements">0</span>
+                        <span class="stat-label">Logros Desbloqueados</span>
+                    </div>
+                    <div class="stat-card" onclick="navigateTo('coupons')">
+                        <span class="stat-icon">🎟️</span>
+                        <span class="stat-number" id="stat-coupons">0</span>
+                        <span class="stat-label">Cupones disponibles</span>
+                    </div>
+                </div>
+
+                <!-- TIMELINE -->
+                <div class="timeline-section">
+                    <h3 class="section-subtitle">🕰️ Nuestra historia</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <span class="timeline-date">Septiembre 2025</span>
+                                <p class="timeline-text">Nos conocimos 💫</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <span class="timeline-date">17 Enero 2026</span>
+                                <p class="timeline-text">Empezamos a ser novios 💕</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot dot-active"></div>
+                            <div class="timeline-content">
+                                <span class="timeline-date">Hoy</span>
+                                <p class="timeline-text" id="timeline-today">Seguimos escribiendo nuestra historia... ✨</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════ -->
+            <!-- PLANS / WISHLIST -->
+            <!-- ═══════════════════════════════════ -->
+            <section id="section-plans" class="section">
+                <!-- Igual que antes -->
+                <div class="section-header">
+                    <h2 class="section-title">📋 Nuestra Agenda de Planes</h2>
+                    <p class="section-desc">Todo lo que queremos hacer juntos</p>
+                </div>
+
+                <div class="add-plan-card glass-card">
+                    <h3 class="form-title">✨ Agregar plan nuevo</h3>
+                    <div class="add-plan-form">
+                        <input type="text" id="plan-input" placeholder="¿Qué plan nuevo tienen?" class="form-input" onkeydown="if(event.key==='Enter')addPlan()">
+                        <select id="plan-category" class="form-select">
+                            <option value="restaurant">🍽️ Restaurante / Cena</option>
+                            <option value="movie">🎬 Película / Serie</option>
+                            <option value="trip">✈️ Viaje</option>
+                            <option value="outdoor">🌳 Aire libre</option>
+                            <option value="activity">🎯 Actividad / Otro</option>
+                        </select>
+                        <button class="btn-accent" onclick="addPlan()">
+                            <span>+</span> Agregar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="plan-filters">
+                    <button class="filter-btn active" data-filter="all" onclick="filterPlans('all')">🌟 Todos</button>
+                    <button class="filter-btn" data-filter="restaurant" onclick="filterPlans('restaurant')">🍽️ Restaurantes</button>
+                    <button class="filter-btn" data-filter="movie" onclick="filterPlans('movie')">🎬 Películas</button>
+                    <button class="filter-btn" data-filter="trip" onclick="filterPlans('trip')">✈️ Viajes</button>
+                    <button class="filter-btn" data-filter="outdoor" onclick="filterPlans('outdoor')">🌳 Aire libre</button>
+                    <button class="filter-btn" data-filter="activity" onclick="filterPlans('activity')">🎯 Actividades</button>
+                </div>
+
+                <div class="kanban-board">
+                    <div class="kanban-column" id="col-pending">
+                        <div class="kanban-header kh-pending">
+                            <h3>💭 Pendientes</h3>
+                            <span class="kanban-count" id="count-pending">0</span>
+                        </div>
+                        <div class="kanban-items" id="items-pending"></div>
+                    </div>
+                    <div class="kanban-column" id="col-progress">
+                        <div class="kanban-header kh-progress">
+                            <h3>🔥 En proceso</h3>
+                            <span class="kanban-count" id="count-progress">0</span>
+                        </div>
+                        <div class="kanban-items" id="items-progress"></div>
+                    </div>
+                    <div class="kanban-column" id="col-done">
+                        <div class="kanban-header kh-done">
+                            <h3>✅ Hechos</h3>
+                            <span class="kanban-count" id="count-done">0</span>
+                        </div>
+                        <div class="kanban-items" id="items-done"></div>
+                    </div>
+                </div>
+
+                <div class="history-section">
+                    <h3 class="section-subtitle clickable" onclick="toggleHistory()">
+                        🗺️ Historial de Aventuras <span id="history-toggle" class="toggle-arrow">▶</span>
+                    </h3>
+                    <div id="history-list" class="history-list collapsed"></div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════ -->
+            <!-- ROULETTE -->
+            <!-- ═══════════════════════════════════ -->
+            <section id="section-roulette" class="section">
+                <!-- Igual que antes -->
+                <div class="section-header">
+                    <h2 class="section-title">🎰 La Ruleta</h2>
+                    <p class="section-desc">La solución definitiva al dilema de qué comer o qué hacer</p>
+                </div>
+                <div class="roulette-mode-selector">
+                    <button class="mode-btn active" id="mode-food" onclick="switchRouletteMode('food')">
+                        <span class="mode-icon">🍕</span><span class="mode-label">Modo Comida</span>
+                    </button>
+                    <button class="mode-btn" id="mode-activity" onclick="switchRouletteMode('activity')">
+                        <span class="mode-icon">🎬</span><span class="mode-label">Modo Salida</span>
+                    </button>
+                </div>
+                <div class="roulette-container">
+                    <div class="roulette-stage">
+                        <div class="roulette-pointer-container"><div class="roulette-pointer">▼</div></div>
+                        <div class="roulette-wheel-wrapper"><canvas id="roulette-canvas" width="380" height="380"></canvas></div>
+                    </div>
+                    <button id="spin-btn" class="btn-spin" onclick="spinRoulette()">
+                        <span class="spin-emoji">🎲</span><span class="spin-label">¡GIRAR!</span>
+                    </button>
+                    <div id="roulette-result" class="roulette-result hidden">
+                        <div class="result-confetti-container" id="result-confetti"></div>
+                        <span class="result-emoji">🎉</span><p class="result-intro">¡Hoy toca...</p>
+                        <h3 id="result-name" class="result-name"></h3>
+                        <button class="btn-secondary" onclick="spinRoulette()">🔄 Girar de nuevo</button>
+                    </div>
+                </div>
+                <div class="roulette-options glass-card">
+                    <h3 class="form-title" id="roulette-options-title">🍕 Opciones</h3>
+                    <div class="roulette-add">
+                        <input type="text" id="roulette-input" placeholder="Agregar opción..." class="form-input" onkeydown="if(event.key==='Enter')addRouletteOption()">
+                        <button class="btn-accent" onclick="addRouletteOption()"><span>+</span> Agregar</button>
+                    </div>
+                    <div class="roulette-list" id="roulette-list"></div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════ -->
+            <!-- COUPONS -->
+            <!-- ═══════════════════════════════════ -->
+            <section id="section-coupons" class="section">
+                <!-- Igual que antes -->
+                <div class="section-header">
+                    <h2 class="section-title">🎟️ Cupones de Amor</h2>
+                    <p class="section-desc">Cupones especiales que podés canjear cuando quieras</p>
+                </div>
+                <div class="coupon-tabs">
+                    <button class="coupon-tab active" id="tab-agus" onclick="switchCouponUser('agus')">
+                        <span class="tab-avatar">A</span> Cupones de Agus
+                    </button>
+                    <button class="coupon-tab" id="tab-lauti" onclick="switchCouponUser('lauti')">
+                        <span class="tab-avatar tab-avatar-l">L</span> Cupones de Lauti
+                    </button>
+                </div>
+                <div class="add-coupon-card glass-card">
+                    <h3 class="form-title">✨ Crear nuevo cupón</h3>
+                    <div class="coupon-form">
+                        <input type="text" id="coupon-title" placeholder="Ej: Vale por un masaje..." class="form-input" onkeydown="if(event.key==='Enter')addCoupon()">
+                        <select id="coupon-icon" class="form-select">
+                            <option value="💆">💆 Masaje</option>
+                            <option value="🎬">🎬 Elegir la peli</option>
+                            <option value="🍽️">🍽️ Cena especial</option>
+                            <option value="💋">💋 Beso especial</option>
+                            <option value="🍕">🍕 Delivery (yo pago)</option>
+                            <option value="⭐">⭐ Deseo especial</option>
+                        </select>
+                        <select id="coupon-for" class="form-select">
+                            <option value="agus">Para Agus 💗</option>
+                            <option value="lauti">Para Lauti 💙</option>
+                        </select>
+                        <button class="btn-accent" onclick="addCoupon()"><span>+</span> Crear cupón</button>
+                    </div>
+                </div>
+                <h3 class="subsection-title" id="available-coupons-title">🎫 Cupones disponibles</h3>
+                <div id="coupons-grid" class="coupons-grid"></div>
+                <p id="no-coupons" class="empty-state hidden">No hay cupones disponibles todavía.</p>
+                <div class="redeemed-section">
+                    <h3 class="subsection-title clickable" onclick="toggleRedeemed()">
+                        📜 Cupones canjeados <span id="redeemed-toggle" class="toggle-arrow">▶</span>
+                    </h3>
+                    <div id="redeemed-grid" class="coupons-grid redeemed-grid collapsed"></div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════ -->
+            <!-- TIME CAPSULE -->
+            <!-- ═══════════════════════════════════ -->
+            <section id="section-capsule" class="section">
+                <div class="section-header">
+                    <h2 class="section-title">🕰️ Cápsula del Tiempo</h2>
+                    <p class="section-desc">Nuestra galería mensual y mensajes al futuro</p>
+                </div>
+
+                <!-- Monthly Photo Upload -->
+                <div class="capsule-add glass-card">
+                    <h3 class="form-title">📸 Agregar recuerdo del mes</h3>
+                    <div class="capsule-form">
+                        <input type="text" id="capsule-month" placeholder="Ej: Julio 2026" class="form-input">
+                        <input type="text" id="capsule-desc" placeholder="En 3 líneas, ¿qué pasó este mes?" class="form-input">
+                        <!-- En lugar de subir archivo real por ahora pedimos una URL o la dejamos simulada -->
+                        <input type="text" id="capsule-img" placeholder="URL de la foto (opcional)" class="form-input">
+                        <button class="btn-accent" onclick="addCapsulePhoto()">Guardar Recuerdo</button>
+                    </div>
+                </div>
+
+                <!-- Timeline Gallery -->
+                <div class="capsule-gallery" id="capsule-gallery">
+                    <!-- Dynamic -->
+                </div>
+
+                <!-- Future Message -->
+                <div class="future-message-card glass-card">
+                    <h3 class="form-title">🔒 Mensaje para el futuro</h3>
+                    <p class="section-desc" style="margin-bottom:1rem;">Escribí una carta que no se podrá leer hasta la fecha indicada.</p>
+                    <div id="future-message-form">
+                        <div class="form-row">
+                            <input type="date" id="future-date" class="form-input">
+                            <input type="text" id="future-title" placeholder="Título secreto..." class="form-input">
+                        </div>
+                        <textarea id="future-content" class="form-input" rows="4" placeholder="Querido/a... (esto estará bloqueado)"></textarea>
+                        <button class="btn-primary" onclick="lockFutureMessage()">🔒 Bloquear Mensaje</button>
+                    </div>
+                    
+                    <div id="locked-message-display" class="locked-message hidden">
+                        <div class="lock-icon">🔐</div>
+                        <h4>Mensaje bloqueado</h4>
+                        <p id="lock-target-date">Se abrirá el...</p>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill" id="lock-progress"></div></div>
+                        <button id="btn-unlock" class="btn-ghost" onclick="tryUnlockMessage()">Intentar abrir</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════ -->
+            <!-- MOTO TRACKER -->
+            <!-- ═══════════════════════════════════ -->
+            <section id="section-moto" class="section">
+                <div class="section-header">
+                    <h2 class="section-title">🏍️ Salidas en Moto</h2>
+                    <p class="section-desc">Nuestro contador de kilómetros y rutas compartidas</p>
+                </div>
+
+                <div class="moto-stats">
+                    <div class="moto-stat-card glass-card">
+                        <span class="moto-icon">🛣️</span>
+                        <h3 id="moto-km">0</h3>
+                        <p>Kilómetros estimados juntos</p>
+                        <div class="moto-actions">
+                            <button onclick="updateMoto('km', 5)">+5km</button>
+                            <button onclick="updateMoto('km', 20)">+20km</button>
+                            <button onclick="updateMoto('km', 50)">+50km</button>
+                        </div>
+                    </div>
+                    <div class="moto-stat-card glass-card">
+                        <span class="moto-icon">🌧️</span>
+                        <h3 id="moto-rain">0</h3>
+                        <p>Veces que nos agarró la lluvia</p>
+                        <div class="moto-actions">
+                            <button onclick="updateMoto('rain', 1)">¡Nos llovió! +1</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 class="form-title">🗺️ Nueva Ruta</h3>
+                    <div class="add-plan-form">
+                        <input type="text" id="moto-route" placeholder="Ej: Costanera a tomar mates..." class="form-input" onkeydown="if(event.key==='Enter')addRoute()">
+                        <button class="btn-accent" onclick="addRoute()"><span>+</span> Registrar Ruta</button>
+                    </div>
+                    
+                    <div class="routes-list" id="routes-list">
+                        <!-- Dynamic -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════ -->
+            <!-- ACHIEVEMENTS -->
+            <!-- ═══════════════════════════════════ -->
+            <section id="section-achievements" class="section">
+                <div class="section-header">
+                    <h2 class="section-title">🏆 Logros Amorosos</h2>
+                    <p class="section-desc">Desbloqueando etapas juntos. ¡Completalos para ganar premios!</p>
+                </div>
+
+                <div class="achievements-grid" id="achievements-grid">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════ -->
+            <!-- PHRASES -->
+            <!-- ═══════════════════════════════════ -->
+            <section id="section-phrases" class="section">
+                <div class="section-header">
+                    <h2 class="section-title">📝 Nuestras Frases Célebres</h2>
+                    <p class="section-desc">Chistes internos, bloopers y frases graciosas para recordar</p>
+                </div>
+
+                <div class="glass-card">
+                    <div class="add-plan-form">
+                        <input type="text" id="phrase-input" placeholder="Escribí esa frase graciosa..." class="form-input" onkeydown="if(event.key==='Enter')addPhrase()">
+                        <select id="phrase-author" class="form-select">
+                            <option value="agus">Dijo Agus</option>
+                            <option value="lauti">Dijo Lauti</option>
+                            <option value="ambos">Blooper juntos</option>
+                        </select>
+                        <button class="btn-accent" onclick="addPhrase()">Pegar Nota</button>
+                    </div>
+                </div>
+
+                <div class="postit-board" id="postit-board">
+                    <!-- Dynamic -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- REAL-TIME WIDGET (FLOATING) -->
+    <!-- ═══════════════════════════════════════ -->
+    <div class="rt-widget" id="rt-widget">
+        <div class="rt-menu hidden" id="rt-menu">
+            <button class="rt-btn-action" onclick="sendMates()">
+                <span class="rt-emoji">🧉</span> ¿Salen mates?
+            </button>
+            <button class="rt-btn-action rt-touch-btn" id="rt-touch-btn">
+                <span class="rt-emoji">✨</span> Mantener presionado
+            </button>
+        </div>
+        <button class="rt-fab" onclick="toggleRtMenu()">
+            <span class="rt-fab-icon">⚡</span>
+        </button>
+    </div>
+
+    <!-- MATES POPUP -->
+    <div id="mates-popup" class="modal hidden">
+        <div class="modal-overlay" onclick="closeModal('mates-popup')"></div>
+        <div class="modal-content mates-content">
+            <div class="mates-animation">🧉</div>
+            <h2 class="modal-title">¡Es la hora del mate!</h2>
+            <p class="modal-desc" id="mates-sender">...</p>
+            <button class="btn-primary" onclick="closeModal('mates-popup')">¡Yendo! 🏃</button>
+        </div>
+    </div>
+
+    <!-- TOUCH SYNC OVERLAY -->
+    <div id="touch-overlay" class="touch-overlay hidden">
+        <div class="touch-ripple"></div>
+        <h2 class="touch-text">¡Conectados! ✨</h2>
+    </div>
+
+    <!-- Modals from before -->
+    <div id="toast" class="toast hidden">
+        <span id="toast-icon" class="toast-icon"></span>
+        <span id="toast-message" class="toast-message"></span>
+    </div>
+
+    <div id="redeem-modal" class="modal hidden">...</div> <!-- Rest is managed by js directly or same as before. To keep simple, I will preserve the original modal divs -->
+    <div id="success-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeModal('success-modal')"></div>
+        <div class="modal-content modal-success">
+            <div class="success-burst" id="success-burst"></div>
+            <div class="success-checkmark"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="25" fill="none" stroke="currentColor" stroke-width="2"/><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg></div>
+            <h2 class="modal-title">¡Cupón Canjeado! 🎉</h2>
+            <p id="success-message" class="modal-desc"></p>
+            <button class="btn-primary" onclick="closeModal('success-modal')">¡Genial! 💕</button>
+        </div>
+    </div>
+    <div id="delete-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeModal('delete-modal')"></div>
+        <div class="modal-content modal-delete">
+            <div class="modal-icon">🗑️</div><h2 class="modal-title">¿Eliminar?</h2>
+            <p class="modal-desc" id="delete-message"></p>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="closeModal('delete-modal')">Cancelar</button>
+                <button class="btn-danger" id="delete-confirm-btn">Eliminar</button>
+            </div>
+        </div>
+    </div>
+    <div id="achievement-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeModal('achievement-modal')"></div>
+        <div class="modal-content achievement-content">
+            <div class="achievement-icon-large">🏆</div>
+            <h2 class="modal-title">¡Logro Desbloqueado!</h2>
+            <h3 id="achievement-title-modal" class="achievement-name"></h3>
+            <p id="achievement-desc-modal" class="modal-desc"></p>
+            <button class="btn-primary" onclick="closeModal('achievement-modal')">¡Increíble! ✨</button>
+        </div>
+    </div>
+
+    <!-- SOCKET IO SCRIPT -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
