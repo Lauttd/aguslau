@@ -1,0 +1,15 @@
+{
+  "name": "El Portal de la Pareja — Agus & Lauti",
+  "short_name": "A & L",
+  "description": "El portal privado de Agustina y Lautaro para organizar su mundo juntos.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f0a1a",
+  "theme_color": "#0f0a1a",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "assets/logo-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "assets/logo-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

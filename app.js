@@ -65,7 +65,7 @@ async function updateDB(key, value) {
         await fetch('/api/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key, value })
+            body: JSON.stringify({ key, value, user: currentUser })
         });
     } catch (e) {
         console.warn('Could not save to backend.');
@@ -145,6 +145,7 @@ function showApp() {
     updateCounter();
     setInterval(updateCounter, 60000);
     renderCurrentSection();
+    setupPushNotifications();
 }
 
 function logout() {
@@ -723,3 +724,56 @@ function showToast(icon, msg) {
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
+
+// ═══════════════════════════════════════════════════════════
+// PUSH NOTIFICATIONS
+// ═══════════════════════════════════════════════════════════
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; i++) outputArray[i] = rawData.charCodeAt(i);
+    return outputArray;
+}
+
+async function setupPushNotifications() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        console.warn('Este navegador no soporta notificaciones push.');
+        return;
+    }
+    if (!currentUser) return;
+
+    try {
+        const registration = await navigator.serviceWorker.register('/service-worker.js');
+
+        // Si ya había permiso denegado antes, no insistimos
+        if (Notification.permission === 'denied') return;
+
+        let permission = Notification.permission;
+        if (permission === 'default') {
+            // Pedimos el permiso recién cuando el usuario ya está logueado,
+            // para que el pedido tenga contexto y no espante apenas entra.
+            permission = await Notification.requestPermission();
+        }
+        if (permission !== 'granted') return;
+
+        let subscription = await registration.pushManager.getSubscription();
+        if (!subscription) {
+            const res = await fetch('/api/vapid-public-key');
+            const { publicKey } = await res.json();
+            subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(publicKey)
+            });
+        }
+
+        await fetch('/api/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user: currentUser, subscription })
+        });
+    } catch (e) {
+        console.warn('No se pudo activar las notificaciones push:', e);
+    }
+}
