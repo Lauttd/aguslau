@@ -54,7 +54,7 @@ async function fetchDB() {
         db = {
             plans: [], coupons: [], roulette_food: ['Hamburguesas', 'Pizza'], roulette_activity: ['Peli'],
             moods: { agus: {}, lauti: {} }, phrases: [], moto: { routes: [], km: 0, rainCount: 0 },
-            achievements: [], capsule: { monthlyPhotos: [], futureMessage: null }
+            achievements: [], capsule: { monthlyPhotos: [], futureMessage: null }, notes: []
         };
     }
 }
@@ -112,6 +112,7 @@ function renderCurrentSection() {
     renderMoto();
     renderAchievements();
     renderPhrases();
+    renderNotes();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -206,11 +207,12 @@ function navigateTo(section) {
         target.style.animation = 'sectionEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) both';
     }
 
-    const titles = { dashboard: '🏠 Inicio', plans: '📋 Nuestros Planes', roulette: '🎰 La Ruleta', coupons: '🎟️ Cupones de Amor', capsule: '🕰️ Cápsula del Tiempo', moto: '🏍️ Viajes en Moto', achievements: '🏆 Logros Amorosos', phrases: '📝 Frases Célebres' };
+    const titles = { dashboard: '🏠 Inicio', plans: '📋 Nuestros Planes', roulette: '🎰 La Ruleta', coupons: '🎟️ Cupones de Amor', capsule: '🕰️ Cápsula del Tiempo', moto: '🏍️ Viajes en Moto', achievements: '🏆 Logros Amorosos', phrases: '📝 Frases Célebres', notes: '💌 Notitas' };
     document.getElementById('page-title').textContent = titles[section] || 'Inicio';
     
     closeSidebarMobile();
     if(section === 'roulette' && !isSpinning) drawRouletteWheel();
+    if(section === 'notes') markNotesRead();
 }
 
 function toggleSidebar() {
@@ -614,8 +616,83 @@ function renderPhrases() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// ACHIEVEMENTS
+// NOTES (NOTITAS)
 // ═══════════════════════════════════════════════════════════
+function addNote() {
+    const input = document.getElementById('note-input');
+    const text = input.value.trim();
+    if (!text) return showToast('⚠️', 'Escribí algo primero');
+    if (!db.notes) db.notes = [];
+
+    const forUser = document.getElementById('note-for').value;
+    db.notes.unshift({
+        id: Date.now(),
+        text,
+        forUser,
+        createdBy: currentUser,
+        createdAt: new Date().toISOString(),
+        read: false
+    });
+    updateDB('notes', db.notes);
+    input.value = '';
+    showToast('💌', 'Notita enviada');
+}
+
+function deleteNote(id) {
+    db.notes = (db.notes || []).filter(n => n.id !== id);
+    updateDB('notes', db.notes);
+}
+
+function markNotesRead() {
+    if (!db.notes || !currentUser) return;
+    let changed = false;
+    db.notes.forEach(n => {
+        if (n.forUser === currentUser && !n.read) { n.read = true; changed = true; }
+    });
+    if (changed) updateDB('notes', db.notes);
+    else updateNotesBadge();
+}
+
+function updateNotesBadge() {
+    const badge = document.getElementById('notes-badge');
+    if (!badge || !currentUser) return;
+    const unread = (db.notes || []).filter(n => n.forUser === currentUser && !n.read).length;
+    badge.textContent = unread;
+    badge.classList.toggle('hidden', unread === 0 || currentSection === 'notes');
+}
+
+function renderNotes() {
+    if (!db.notes || !currentUser) return;
+
+    // Autoseleccionar "Para <mi pareja>" en el formulario
+    const forSelect = document.getElementById('note-for');
+    if (forSelect && !forSelect.dataset.userSet) {
+        const partner = currentUser === 'agus' ? 'lauti' : 'agus';
+        forSelect.value = partner;
+        forSelect.dataset.userSet = '1';
+    }
+
+    const visible = db.notes.filter(n => n.forUser === currentUser || n.createdBy === currentUser);
+    const board = document.getElementById('notes-board');
+    if (board) {
+        board.innerHTML = visible.length ? visible.map(n => `
+            <div class="postit ${n.forUser === currentUser && !n.read ? 'postit-unread' : ''}">
+                <button class="postit-delete" onclick="deleteNote(${n.id})">✕</button>
+                ${n.forUser === currentUser && !n.read ? '<span class="postit-unread-dot"></span>' : ''}
+                "${escapeHtml(n.text)}"
+                <div class="postit-author">
+                    ${n.createdBy === currentUser
+                        ? `Para ${n.forUser === 'agus' ? 'Agus' : 'Lauti'} · ${formatDate(n.createdAt)}`
+                        : `De ${n.createdBy === 'agus' ? 'Agus' : 'Lauti'} · ${formatDate(n.createdAt)}`}
+                </div>
+            </div>
+        `).join('') : `<p style="text-align:center;color:var(--text-tertiary);padding:2rem;">Todavía no hay notitas. ¡Dejale una a tu pareja! 💕</p>`;
+    }
+
+    updateNotesBadge();
+}
+
+
 const ACHIEVEMENTS_DEF = {
     'cinefilos': { icon: '🍿', name: 'Cinéfilos', desc: 'Ver 10 películas juntos' },
     'invierno': { icon: '❄️', name: 'Supervivientes del Invierno', desc: 'Pasar su primer invierno juntos' },

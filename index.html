@@ -131,6 +131,11 @@
                     <span class="nav-icon">🏆</span>
                     <span class="nav-text">Logros Amorosos</span>
                 </li>
+                <li class="nav-item" data-section="notes" onclick="navigateTo('notes')">
+                    <span class="nav-icon">💌</span>
+                    <span class="nav-text">Notitas</span>
+                    <span class="nav-badge hidden" id="notes-badge">0</span>
+                </li>
                 <li class="nav-item" data-section="phrases" onclick="navigateTo('phrases')">
                     <span class="nav-icon">📝</span>
                     <span class="nav-text">Frases Célebres</span>
@@ -523,6 +528,31 @@
 
                 <div class="achievements-grid" id="achievements-grid">
                     <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════ -->
+            <!-- NOTES (NOTITAS) -->
+            <!-- ═══════════════════════════════════ -->
+            <section id="section-notes" class="section">
+                <div class="section-header">
+                    <h2 class="section-title">💌 Notitas</h2>
+                    <p class="section-desc">Dejale una notita a tu pareja para que la encuentre cuando entre</p>
+                </div>
+
+                <div class="glass-card">
+                    <div class="add-plan-form">
+                        <input type="text" id="note-input" placeholder="Escribí algo lindo..." class="form-input" maxlength="300" onkeydown="if(event.key==='Enter')addNote()">
+                        <select id="note-for" class="form-select">
+                            <option value="agus">Para Agus</option>
+                            <option value="lauti">Para Lauti</option>
+                        </select>
+                        <button class="btn-accent" onclick="addNote()"><span>💌</span> Dejar notita</button>
+                    </div>
+                </div>
+
+                <div class="postit-board" id="notes-board">
+                    <!-- Dynamic -->
                 </div>
             </section>
 

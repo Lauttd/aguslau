@@ -595,6 +595,40 @@ input, select {
     text-align: center;
 }
 
+.nav-text {
+    flex: 1;
+}
+
+.nav-badge {
+    background: var(--gradient-pink, #ff6b9d);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.postit-unread {
+    box-shadow: 0 0 0 2px #ff6b9d, 2px 4px 10px rgba(255, 107, 157, 0.4);
+}
+
+.postit-unread-dot {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff2d6e;
+    box-shadow: 0 0 0 3px rgba(255, 45, 110, 0.25);
+}
+
 .sidebar-footer {
     padding: 1rem 1.25rem;
     border-top: 1px solid var(--border);

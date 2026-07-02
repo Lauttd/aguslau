@@ -48,6 +48,7 @@ const DEFAULT_DB = {
         monthlyPhotos: [],
         futureMessage: null
     },
+    notes: [],
     subscriptions: {
         agus: [],
         lauti: []
@@ -61,6 +62,7 @@ if (!fs.existsSync(DB_FILE)) {
 
 let db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
 if (!db.subscriptions) db.subscriptions = { agus: [], lauti: [] };
+if (!db.notes) db.notes = [];
 
 // Save DB helper
 function saveDB() {
@@ -193,6 +195,91 @@ async function handlePushForUpdate(key, previous, value, user) {
                 tag: 'logro-nuevo',
                 url: '/'
             })));
+        }
+    }
+
+    if (key === 'moods' && value && previous && target) {
+        const before = previous[user] && previous[user].time;
+        const after = value[user] && value[user].time;
+        if (after && after !== before) {
+            await sendPushToUser(target, {
+                title: '💭 Nuevo estado de ánimo',
+                body: `${senderName} está: "${value[user].text}"`,
+                tag: 'mood',
+                url: '/'
+            });
+        }
+    }
+
+    if (key === 'capsule' && value && previous && target) {
+        const beforePhotos = previous.monthlyPhotos || [];
+        const afterPhotos = value.monthlyPhotos || [];
+        if (afterPhotos.length > beforePhotos.length) {
+            const newPhoto = afterPhotos.find((p) => !beforePhotos.some((old) => old.id === p.id));
+            if (newPhoto) {
+                await sendPushToUser(target, {
+                    title: '🕰️ Nuevo recuerdo en la cápsula',
+                    body: `${senderName} agregó "${newPhoto.month}" a la cápsula del tiempo`,
+                    tag: 'capsula-foto',
+                    url: '/'
+                });
+            }
+        }
+        if (!previous.futureMessage && value.futureMessage) {
+            await sendPushToUser(target, {
+                title: '🔒 Mensaje al futuro guardado',
+                body: `${senderName} dejó un mensaje sellado para el ${value.futureMessage.date}`,
+                tag: 'capsula-mensaje',
+                url: '/'
+            });
+        }
+    }
+
+    if (key === 'moto' && value && previous && target) {
+        const beforeRoutes = previous.routes || [];
+        const afterRoutes = value.routes || [];
+        if (afterRoutes.length > beforeRoutes.length) {
+            const newRoute = afterRoutes.find((r) => !beforeRoutes.some((old) => old.id === r.id));
+            if (newRoute) {
+                await sendPushToUser(target, {
+                    title: '🏍️ Nueva ruta registrada',
+                    body: `${senderName} registró: "${newRoute.text}"`,
+                    tag: 'moto-ruta',
+                    url: '/'
+                });
+            }
+        }
+        if ((value.rainCount || 0) > (previous.rainCount || 0)) {
+            await sendPushToUser(target, {
+                title: '🌧️ ¡Los agarró la lluvia!',
+                body: `${senderName} registró que los agarró la lluvia en la moto`,
+                tag: 'moto-lluvia',
+                url: '/'
+            });
+        }
+    }
+
+    if (key === 'phrases' && Array.isArray(value) && Array.isArray(previous) && value.length > (previous.length || 0)) {
+        const newPhrase = value.find((p) => !previous.some((old) => old.id === p.id));
+        if (newPhrase && target) {
+            await sendPushToUser(target, {
+                title: '📝 Nueva frase célebre',
+                body: `"${newPhrase.text}"`,
+                tag: 'frase-nueva',
+                url: '/'
+            });
+        }
+    }
+
+    if (key === 'notes' && Array.isArray(value) && Array.isArray(previous) && value.length > (previous.length || 0)) {
+        const newNote = value.find((n) => !previous.some((old) => old.id === n.id));
+        if (newNote && newNote.forUser) {
+            await sendPushToUser(newNote.forUser, {
+                title: '💌 Te dejaron una notita',
+                body: `${senderName}: "${newNote.text}"`,
+                tag: 'notita-nueva',
+                url: '/'
+            });
         }
     }
 }
