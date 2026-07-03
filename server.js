@@ -43,7 +43,25 @@ const DEFAULT_DB = {
     },
     achievements: [],
     capsule: {
-        monthlyPhotos: [],
+        monthlyPhotos: [
+            { id: 1, month: "El mejor abrazo del mundo", desc: "Abrazos q guardo para siempre", img: "assets/foto1.jpg" },
+            { id: 2, month: "Me haces feliz", desc: "Se nota, no?", img: "assets/foto2.jpg" },
+            { id: 3, month: "En un cumple los 2", desc: "Mi cara es peor", img: "assets/foto3.jpg" },
+            { id: 4, month: "Salidita", desc: "Que buena noche wacho casi me muero por tu cigarillo", img: "assets/foto4.jpg" },
+            { id: 5, month: "Nuestro día a día 🏡", desc: "La rutina es mejor si es con vos.", img: "assets/foto5.jpg" },
+            { id: 6, month: "Una de mis fotos fav", desc: "Cuando te miro dormida me doy cuenta lo afortunado que soy", img: "assets/foto6.jpg" },
+            { id: 7, month: "La familia faltan mas hijos", desc: "Monogamia o muerte", img: "assets/foto7.jpg" },
+            { id: 8, month: "Te AMO", desc: "TEAMOOOOOOOOOOOOOOOO", img: "assets/foto8.jpg" },
+            { id: 9, month: "Recuerdito de cuando tu familia me queria", desc: "Perdon familia", img: "assets/foto9.jpg" },
+            { id: 10, month: "Cenita", desc: "Hay q repetir amor", img: "assets/foto10.jpg" },
+            { id: 11, month: "Recuerdos del viajecitos p1", desc: "Q ricos tus besos", img: "assets/foto11.jpg" },
+            { id: 12, month: "Con cesarito", desc: "Pitoka siempre esta en algun lado", img: "assets/foto12.jpg" },
+            { id: 13, month: "Viajecito p2", desc: "teamo otra vez", img: "assets/foto13.jpg" },
+            { id: 14, month: "Viajecito p3", desc: "En la playita los dos", img: "assets/foto14.jpg" },
+            { id: 15, month: "Viajecito p4", desc: "Que lindos somos amor", img: "assets/foto15.jpg" },
+            { id: 16, month: "Viajecito p5", desc: "Aprovechando el lindo día.", img: "assets/foto16.jpg" },
+            { id: 17, month: "Final del viajecito", desc: "Te amo con toda mi alma miamor", img: "assets/foto17.jpg" }
+        ],
         futureMessage: null
     },
     notes: [],
@@ -91,6 +109,39 @@ app.get('/api/data', (req, res) => {
 
 app.get('/api/vapid-public-key', (req, res) => {
     res.json({ publicKey: VAPID_PUBLIC_KEY });
+});
+
+// ─── RESTAURACIÓN ÚNICA de la cápsula original (17 fotos con título y desc) ───
+// Se puede visitar una sola vez desde el navegador. Por seguridad, solo
+// actúa si la cápsula está vacía, así nunca pisa fotos nuevas que ya hayan
+// agregado después de la migración a MongoDB.
+app.get('/api/restore-original-capsule', async (req, res) => {
+    if (db.capsule && db.capsule.monthlyPhotos && db.capsule.monthlyPhotos.length > 0) {
+        return res.send('⚠️ La cápsula ya tiene fotos — no se tocó nada para no pisar nada nuevo. Si igual querés forzar la restauración, avisale a Claude.');
+    }
+
+    db.capsule.monthlyPhotos = [
+        { id: 1, month: "El mejor abrazo del mundo", desc: "Abrazos q guardo para siempre", img: "assets/foto1.jpg" },
+        { id: 2, month: "Me haces feliz", desc: "Se nota, no?", img: "assets/foto2.jpg" },
+        { id: 3, month: "En un cumple los 2", desc: "Mi cara es peor", img: "assets/foto3.jpg" },
+        { id: 4, month: "Salidita", desc: "Que buena noche wacho casi me muero por tu cigarillo", img: "assets/foto4.jpg" },
+        { id: 5, month: "Nuestro día a día 🏡", desc: "La rutina es mejor si es con vos.", img: "assets/foto5.jpg" },
+        { id: 6, month: "Una de mis fotos fav", desc: "Cuando te miro dormida me doy cuenta lo afortunado que soy", img: "assets/foto6.jpg" },
+        { id: 7, month: "La familia faltan mas hijos", desc: "Monogamia o muerte", img: "assets/foto7.jpg" },
+        { id: 8, month: "Te AMO", desc: "TEAMOOOOOOOOOOOOOOOO", img: "assets/foto8.jpg" },
+        { id: 9, month: "Recuerdito de cuando tu familia me queria", desc: "Perdon familia", img: "assets/foto9.jpg" },
+        { id: 10, month: "Cenita", desc: "Hay q repetir amor", img: "assets/foto10.jpg" },
+        { id: 11, month: "Recuerdos del viajecitos p1", desc: "Q ricos tus besos", img: "assets/foto11.jpg" },
+        { id: 12, month: "Con cesarito", desc: "Pitoka siempre esta en algun lado", img: "assets/foto12.jpg" },
+        { id: 13, month: "Viajecito p2", desc: "teamo otra vez", img: "assets/foto13.jpg" },
+        { id: 14, month: "Viajecito p3", desc: "En la playita los dos", img: "assets/foto14.jpg" },
+        { id: 15, month: "Viajecito p4", desc: "Que lindos somos amor", img: "assets/foto15.jpg" },
+        { id: 16, month: "Viajecito p5", desc: "Aprovechando el lindo día.", img: "assets/foto16.jpg" },
+        { id: 17, month: "Final del viajecito", desc: "Te amo con toda mi alma miamor", img: "assets/foto17.jpg" }
+    ];
+    await saveDB(db);
+    io.emit('data-updated', { key: 'capsule', value: db.capsule });
+    res.send('✅ ¡Listo! Se restauraron las 17 fotos originales con sus títulos y descripciones. Ya podés cerrar esta pestaña y volver a la app.');
 });
 
 // Guardar la suscripción push de un usuario (agus / lauti)
