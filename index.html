@@ -239,6 +239,21 @@
                     </div>
                 </div>
 
+                <!-- NOTITAS WIDGET (LIVE) -->
+                <div class="notes-widget glass-card" id="notes-widget" onclick="navigateTo('notes')">
+                    <div class="notes-widget-header">
+                        <span class="notes-widget-title">💌 Notitas</span>
+                        <span class="notes-widget-badge hidden" id="notes-widget-badge">0 nuevas</span>
+                    </div>
+                    <div class="notes-widget-feed" id="notes-widget-feed">
+                        <p class="notes-widget-empty">Todavía no hay notitas 💕</p>
+                    </div>
+                    <div class="notes-widget-quick">
+                        <input type="text" id="notes-widget-input" class="form-input" placeholder="Escribile algo rápido..." onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.stopPropagation(); addNoteFromWidget();}">
+                        <button class="btn-accent" onclick="event.stopPropagation(); addNoteFromWidget();"><span>💌</span></button>
+                    </div>
+                </div>
+
                 <!-- TIMELINE -->
                 <div class="timeline-section">
                     <h3 class="section-subtitle">🕰️ Nuestra historia</h3>
@@ -610,6 +625,16 @@
             <p class="modal-desc" id="mates-sender">...</p>
             <button class="btn-primary" onclick="closeModal('mates-popup')">¡Yendo! 🏃</button>
         </div>
+    </div>
+
+    <!-- LIVE NOTE TOAST (aparece al instante cuando llega una notita) -->
+    <div id="note-toast" class="note-toast hidden">
+        <span class="note-toast-icon">💌</span>
+        <div class="note-toast-body">
+            <p class="note-toast-from" id="note-toast-from">...</p>
+            <p class="note-toast-text" id="note-toast-text">...</p>
+        </div>
+        <button class="note-toast-close" onclick="closeNoteToast()">✕</button>
     </div>
 
     <!-- TOUCH SYNC OVERLAY -->

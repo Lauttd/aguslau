@@ -1942,6 +1942,197 @@ input, select {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   NOTITAS — DASHBOARD WIDGET (LIVE)
+   ═══════════════════════════════════════════════════════════ */
+.notes-widget {
+    margin-top: 1.5rem;
+    cursor: pointer;
+    transition: var(--transition-normal);
+}
+
+.notes-widget:hover {
+    transform: translateY(-2px);
+}
+
+.notes-widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.85rem;
+}
+
+.notes-widget-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-primary);
+}
+
+.notes-widget-badge {
+    background: var(--gradient-pink, #ff6b9d);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    animation: notesPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes notesPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+.notes-widget-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-height: 220px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+}
+
+.notes-widget-empty {
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    padding: 1rem 0;
+}
+
+.notes-widget-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.65rem 0.8rem;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: var(--radius-md);
+    border-left: 3px solid transparent;
+    animation: fadeIn 0.4s ease both;
+}
+
+.notes-widget-item.unread {
+    border-left-color: #ff6b9d;
+    background: rgba(255, 107, 157, 0.08);
+}
+
+.notes-widget-item-emoji {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.notes-widget-item-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.notes-widget-item-text {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.notes-widget-item-meta {
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+    margin-top: 0.15rem;
+}
+
+.notes-widget-quick {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.notes-widget-quick .form-input {
+    flex: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NOTITAS — REAL-TIME TOAST
+   ═══════════════════════════════════════════════════════════ */
+.note-toast {
+    position: fixed;
+    top: 1.25rem;
+    right: 1.25rem;
+    left: 1.25rem;
+    max-width: 380px;
+    margin-left: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.1rem;
+    background: rgba(24, 14, 40, 0.97);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 107, 157, 0.35);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 107, 157, 0.1);
+    z-index: 2000;
+    opacity: 0;
+    transform: translateY(-30px) scale(0.96);
+    transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+}
+
+.note-toast.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.note-toast.hidden {
+    display: flex;
+    pointer-events: none;
+}
+
+.note-toast-icon {
+    font-size: 1.6rem;
+    animation: notesPulse 1.2s ease-in-out infinite;
+}
+
+.note-toast-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.note-toast-from {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #ff8fb3;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.2rem;
+}
+
+.note-toast-text {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.note-toast-close {
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    padding: 0.1rem;
+}
+
+.note-toast-close:hover {
+    color: var(--text-primary);
+}
+
+@media (max-width: 480px) {
+    .note-toast {
+        top: 0.75rem;
+        right: 0.75rem;
+        left: 0.75rem;
+        max-width: none;
+    }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
    MODALS
    ═══════════════════════════════════════════════════════════ */
 .modal {

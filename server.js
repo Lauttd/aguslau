@@ -1,16 +1,14 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const fs = require('fs');
-const path = require('path');
 const webpush = require('web-push');
+const { loadDB, saveDB, isPersistent } = require('./storage');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
 const PORT = process.env.PORT || 8080;
-const DB_FILE = path.join(__dirname, 'database.json');
 
 // ─── PUSH NOTIFICATIONS (VAPID) ───
 // En Render, configurá estas 3 variables de entorno con tus propios valores
@@ -55,23 +53,7 @@ const DEFAULT_DB = {
     }
 };
 
-// Initialize DB if not exists
-if (!fs.existsSync(DB_FILE)) {
-    fs.writeFileSync(DB_FILE, JSON.stringify(DEFAULT_DB, null, 2));
-}
-
-let db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-if (!db.subscriptions) db.subscriptions = { agus: [], lauti: [] };
-if (!db.notes) db.notes = [];
-
-// Save DB helper
-function saveDB() {
-    try {
-        fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
-    } catch (e) {
-        console.warn("No se pudo escribir en el disco, manteniendo cambios en memoria.");
-    }
-}
+let db = null;
 
 // ─── PUSH HELPER ───
 // Manda una notificación a TODOS los dispositivos suscriptos de un usuario
@@ -96,7 +78,7 @@ async function sendPushToUser(user, payload) {
             }
         }
     });
-    if (changed) saveDB();
+    if (changed) await saveDB(db);
 }
 
 app.use(express.static(__dirname));
@@ -112,7 +94,7 @@ app.get('/api/vapid-public-key', (req, res) => {
 });
 
 // Guardar la suscripción push de un usuario (agus / lauti)
-app.post('/api/subscribe', (req, res) => {
+app.post('/api/subscribe', async (req, res) => {
     const { user, subscription } = req.body;
     if (!USERS.includes(user) || !subscription || !subscription.endpoint) {
         return res.status(400).json({ error: 'Datos inválidos' });
@@ -122,16 +104,16 @@ app.post('/api/subscribe', (req, res) => {
     const exists = db.subscriptions[user].some((s) => s.endpoint === subscription.endpoint);
     if (!exists) {
         db.subscriptions[user].push(subscription);
-        saveDB();
+        await saveDB(db);
     }
     res.json({ success: true });
 });
 
-app.post('/api/unsubscribe', (req, res) => {
+app.post('/api/unsubscribe', async (req, res) => {
     const { user, endpoint } = req.body;
     if (!USERS.includes(user) || !endpoint) return res.status(400).json({ error: 'Datos inválidos' });
     db.subscriptions[user] = (db.subscriptions[user] || []).filter((s) => s.endpoint !== endpoint);
-    saveDB();
+    await saveDB(db);
     res.json({ success: true });
 });
 
@@ -143,7 +125,7 @@ app.post('/api/update', async (req, res) => {
 
     const previous = db[key];
     db[key] = value;
-    saveDB();
+    await saveDB(db);
 
     // Notify all clients except the sender (real-time UI sync)
     io.emit('data-updated', { key, value });
@@ -333,6 +315,17 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(PORT, () => {
-    console.log(`El Portal de la Pareja corriendo en http://localhost:${PORT}`);
-});
+async function start() {
+    db = await loadDB(DEFAULT_DB);
+    if (!db.subscriptions) db.subscriptions = { agus: [], lauti: [] };
+    if (!db.notes) db.notes = [];
+
+    server.listen(PORT, () => {
+        console.log(`El Portal de la Pareja corriendo en http://localhost:${PORT}`);
+        console.log(isPersistent()
+            ? '💾 Persistencia: MongoDB Atlas (los datos NO se pierden con redeploys)'
+            : '⚠️  Persistencia: archivo local (se puede perder en redeploys — configurá MONGODB_URI)');
+    });
+}
+
+start();

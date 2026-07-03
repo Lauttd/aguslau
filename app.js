@@ -77,6 +77,9 @@ function setupSocket() {
     try {
         socket = io();
         socket.on('data-updated', (data) => {
+            if (data.key === 'notes') {
+                handleIncomingNotes(data.value);
+            }
             db[data.key] = data.value;
             renderCurrentSection();
         });
@@ -622,9 +625,22 @@ function addNote() {
     const input = document.getElementById('note-input');
     const text = input.value.trim();
     if (!text) return showToast('⚠️', 'Escribí algo primero');
-    if (!db.notes) db.notes = [];
-
     const forUser = document.getElementById('note-for').value;
+    createNote(text, forUser);
+    input.value = '';
+}
+
+function addNoteFromWidget() {
+    const input = document.getElementById('notes-widget-input');
+    const text = input.value.trim();
+    if (!text || !currentUser) return;
+    const partner = currentUser === 'agus' ? 'lauti' : 'agus';
+    createNote(text, partner);
+    input.value = '';
+}
+
+function createNote(text, forUser) {
+    if (!db.notes) db.notes = [];
     db.notes.unshift({
         id: Date.now(),
         text,
@@ -634,7 +650,6 @@ function addNote() {
         read: false
     });
     updateDB('notes', db.notes);
-    input.value = '';
     showToast('💌', 'Notita enviada');
 }
 
@@ -650,15 +665,23 @@ function markNotesRead() {
         if (n.forUser === currentUser && !n.read) { n.read = true; changed = true; }
     });
     if (changed) updateDB('notes', db.notes);
-    else updateNotesBadge();
+    else { updateNotesBadge(); renderNotesWidget(); }
 }
 
 function updateNotesBadge() {
     const badge = document.getElementById('notes-badge');
-    if (!badge || !currentUser) return;
+    const widgetBadge = document.getElementById('notes-widget-badge');
+    if (!currentUser) return;
     const unread = (db.notes || []).filter(n => n.forUser === currentUser && !n.read).length;
-    badge.textContent = unread;
-    badge.classList.toggle('hidden', unread === 0 || currentSection === 'notes');
+
+    if (badge) {
+        badge.textContent = unread;
+        badge.classList.toggle('hidden', unread === 0 || currentSection === 'notes');
+    }
+    if (widgetBadge) {
+        widgetBadge.textContent = `${unread} nueva${unread === 1 ? '' : 's'}`;
+        widgetBadge.classList.toggle('hidden', unread === 0);
+    }
 }
 
 function renderNotes() {
@@ -690,6 +713,72 @@ function renderNotes() {
     }
 
     updateNotesBadge();
+    renderNotesWidget();
+}
+
+// ─── Widget en vivo del Dashboard ───
+function renderNotesWidget() {
+    const feed = document.getElementById('notes-widget-feed');
+    if (!feed || !currentUser || !db.notes) return;
+
+    const visible = db.notes
+        .filter(n => n.forUser === currentUser || n.createdBy === currentUser)
+        .slice(0, 5);
+
+    feed.innerHTML = visible.length ? visible.map(n => {
+        const isReceived = n.createdBy !== currentUser;
+        const unread = isReceived && !n.read;
+        const who = isReceived
+            ? (n.createdBy === 'agus' ? 'Agus' : 'Lauti')
+            : `Para ${n.forUser === 'agus' ? 'Agus' : 'Lauti'}`;
+        return `
+            <div class="notes-widget-item ${unread ? 'unread' : ''}">
+                <span class="notes-widget-item-emoji">${isReceived ? '💌' : '📤'}</span>
+                <div class="notes-widget-item-body">
+                    <p class="notes-widget-item-text">${escapeHtml(n.text)}</p>
+                    <p class="notes-widget-item-meta">${who} · ${formatDate(n.createdAt)}</p>
+                </div>
+            </div>
+        `;
+    }).join('') : `<p class="notes-widget-empty">Todavía no hay notitas 💕</p>`;
+}
+
+// ─── Detección en tiempo real (llega mientras la app está abierta) ───
+function handleIncomingNotes(newNotes) {
+    if (!currentUser || !Array.isArray(newNotes)) return;
+    const oldNotes = db.notes || [];
+    const brandNew = newNotes.filter(n => !oldNotes.some(old => old.id === n.id));
+
+    brandNew.forEach(n => {
+        if (n.forUser === currentUser && n.createdBy !== currentUser) {
+            const senderName = n.createdBy === 'agus' ? 'Agus' : 'Lauti';
+            showNoteToast(senderName, n.text);
+            if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
+        }
+    });
+}
+
+let noteToastTimeout;
+function showNoteToast(fromName, text) {
+    const toast = document.getElementById('note-toast');
+    if (!toast) return;
+    document.getElementById('note-toast-from').textContent = `${fromName} te dejó una notita`;
+    document.getElementById('note-toast-text').textContent = text;
+    toast.onclick = () => { navigateTo('notes'); closeNoteToast(); };
+
+    toast.classList.remove('hidden');
+    void toast.offsetWidth;
+    toast.classList.add('show');
+
+    clearTimeout(noteToastTimeout);
+    noteToastTimeout = setTimeout(closeNoteToast, 6000);
+}
+function closeNoteToast() {
+    const toast = document.getElementById('note-toast');
+    if (!toast) return;
+    toast.classList.remove('show');
+    clearTimeout(noteToastTimeout);
+    setTimeout(() => toast.classList.add('hidden'), 400);
 }
 
 
