@@ -511,27 +511,101 @@ function toggleRedeemed() { document.getElementById('redeemed-grid').classList.t
 // ═══════════════════════════════════════════════════════════
 // TIME CAPSULE
 // ═══════════════════════════════════════════════════════════
+let capsulePendingImg = null; // dataURL de la foto ya comprimida, lista para guardar
+
+function handleCapsuleFileSelect(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    const label = document.getElementById('capsule-file-text');
+    label.textContent = '⏳ Procesando foto...';
+
+    compressImage(file, 1000, 0.72, (dataUrl, error) => {
+        if (error) {
+            showToast('⚠️', 'No se pudo leer esa foto, probá con otra');
+            label.textContent = '📷 Elegir foto desde el celular';
+            return;
+        }
+        capsulePendingImg = dataUrl;
+        const preview = document.getElementById('capsule-preview');
+        preview.src = dataUrl;
+        preview.classList.remove('hidden');
+        label.textContent = '✅ Foto lista — tocá para cambiarla';
+    });
+}
+
+// Redimensiona y comprime una imagen en el propio celular antes de guardarla,
+// para que las fotos no pesen demasiado (limite práctico ~200KB cada una).
+function compressImage(file, maxDimension, quality, callback) {
+    const reader = new FileReader();
+    reader.onerror = () => callback(null, true);
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onerror = () => callback(null, true);
+        img.onload = () => {
+            let { width, height } = img;
+            if (width > height && width > maxDimension) {
+                height = Math.round(height * (maxDimension / width));
+                width = maxDimension;
+            } else if (height > maxDimension) {
+                width = Math.round(width * (maxDimension / height));
+                height = maxDimension;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+            callback(canvas.toDataURL('image/jpeg', quality), false);
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
 function addCapsulePhoto() {
     const m = document.getElementById('capsule-month').value.trim();
     const d = document.getElementById('capsule-desc').value.trim();
-    const img = document.getElementById('capsule-img').value.trim();
-    if(!m || !d) return showToast('⚠️', 'Falta mes o descripción');
-    
-    db.capsule.monthlyPhotos.unshift({ id: Date.now(), month: m, desc: d, img: img || 'https://via.placeholder.com/400x300?text=💕' });
+    if (!m || !d) return showToast('⚠️', 'Falta mes o descripción');
+
+    const saveBtn = document.getElementById('capsule-save-btn');
+    saveBtn.disabled = true;
+
+    db.capsule.monthlyPhotos.unshift({
+        id: Date.now(),
+        month: m,
+        desc: d,
+        img: capsulePendingImg || null,
+        addedBy: currentUser,
+        createdAt: new Date().toISOString()
+    });
     updateDB('capsule', db.capsule);
+
     document.getElementById('capsule-month').value = '';
     document.getElementById('capsule-desc').value = '';
-    document.getElementById('capsule-img').value = '';
+    document.getElementById('capsule-img-file').value = '';
+    document.getElementById('capsule-preview').classList.add('hidden');
+    document.getElementById('capsule-file-text').textContent = '📷 Elegir foto desde el celular';
+    capsulePendingImg = null;
+    saveBtn.disabled = false;
+    showToast('📸', 'Recuerdo guardado');
 }
+
+function deleteCapsulePhoto(id) {
+    db.capsule.monthlyPhotos = db.capsule.monthlyPhotos.filter(p => p.id !== id);
+    updateDB('capsule', db.capsule);
+}
+
 function renderCapsule() {
     if(!db.capsule) return;
     document.getElementById('capsule-gallery').innerHTML = db.capsule.monthlyPhotos.map(p => `
         <div class="capsule-item">
-            ${p.img ? `<img src="${escapeHtml(p.img)}" class="capsule-item-img">` : `<div class="capsule-item-img">📸</div>`}
+            <button class="capsule-delete" onclick="deleteCapsulePhoto(${p.id})">✕</button>
+            ${p.img ? `<img src="${p.img}" class="capsule-item-img">` : `<div class="capsule-item-img">📸</div>`}
             <h4 class="capsule-item-month">${escapeHtml(p.month)}</h4>
             <p class="capsule-item-desc">${escapeHtml(p.desc)}</p>
+            ${p.addedBy ? `<p class="capsule-item-author">Agregado por ${p.addedBy === 'agus' ? 'Agus' : 'Lauti'}${p.createdAt ? ' · ' + formatDate(p.createdAt) : ''}</p>` : ''}
         </div>
-    `).join('');
+    `).join('') || `<p style="text-align:center;color:var(--text-tertiary);padding:2rem;grid-column:1/-1;">Todavía no hay recuerdos guardados. ¡Agreguen el primero! 💕</p>`;
 
     const msg = db.capsule.futureMessage;
     if (msg) {

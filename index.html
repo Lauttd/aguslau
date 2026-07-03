@@ -455,9 +455,14 @@
                     <div class="capsule-form">
                         <input type="text" id="capsule-month" placeholder="Ej: Julio 2026" class="form-input">
                         <input type="text" id="capsule-desc" placeholder="En 3 líneas, ¿qué pasó este mes?" class="form-input">
-                        <!-- En lugar de subir archivo real por ahora pedimos una URL o la dejamos simulada -->
-                        <input type="text" id="capsule-img" placeholder="URL de la foto (opcional)" class="form-input">
-                        <button class="btn-accent" onclick="addCapsulePhoto()">Guardar Recuerdo</button>
+
+                        <label class="capsule-file-label" id="capsule-file-label" for="capsule-img-file">
+                            <span id="capsule-file-text">📷 Elegir foto desde el celular</span>
+                        </label>
+                        <input type="file" id="capsule-img-file" accept="image/*" onchange="handleCapsuleFileSelect(event)" hidden>
+                        <img id="capsule-preview" class="capsule-preview hidden">
+
+                        <button class="btn-accent" onclick="addCapsulePhoto()" id="capsule-save-btn">Guardar Recuerdo</button>
                     </div>
                 </div>
 

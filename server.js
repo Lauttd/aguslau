@@ -82,7 +82,7 @@ async function sendPushToUser(user, payload) {
 }
 
 app.use(express.static(__dirname));
-app.use(express.json());
+app.use(express.json({ limit: '8mb' }));
 
 // API Routes
 app.get('/api/data', (req, res) => {

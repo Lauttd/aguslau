@@ -2549,6 +2549,63 @@ input, select {
     font-size: 0.95rem;
     line-height: 1.5;
 }
+.capsule-item-author {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    margin-top: 0.5rem;
+}
+.capsule-delete {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(10, 10, 20, 0.6);
+    color: #fff;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    transition: var(--transition-fast);
+}
+.capsule-delete:hover {
+    background: #ff3b5c;
+    transform: scale(1.08);
+}
+
+.capsule-file-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    text-align: center;
+}
+.capsule-file-label:hover {
+    border-color: var(--pink);
+    color: var(--text-primary);
+    background: rgba(255, 107, 157, 0.06);
+}
+
+.capsule-preview {
+    width: 100%;
+    max-height: 220px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    margin: 0;
+}
+.capsule-preview.hidden {
+    display: none;
+}
 /* Future Message */
 .form-row {
     display: flex;
